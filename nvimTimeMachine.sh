@@ -78,10 +78,11 @@ function help() {
 OPTIONS:
 --------
 
-	(-cc)| (--create_capsule)    : create a new capsules
-	(-l) | (--list_capsules)     : list all saved capsules
-	(-rc)| (--restore_capsule)   : restore a capsule
-	(-h) | (--help)	             : show this help
+	(-cc)   | (--create_capsule)    : create a new capsules
+	(-l)    | (--list_capsules)     : list all saved capsules
+	(-rc)   | (--restore_capsule)   : restore a capsule
+	(-[vV]) | (--version)           : current CLI version
+	(-[hH]) | (--help)	            : show this help
 
 Dependencies:
 -------------
@@ -89,11 +90,15 @@ Dependencies:
 	- pv        : brew install pv
 	- zip       : brew install zip
 
+Notes:
+------
+	MacOSX: \$HOME is \$home for GNU Linux
+
 EOF
 }
 
 function version() {
-cat <<EOF
+	cat <<EOF
 Version: 0.0.1
 EOF
 }
@@ -106,22 +111,76 @@ function check_macOS_dependencies() {
 			exit 1
 		else
 			echo -e "[${RED}\uf487${NC} ] ${GREEN}${dependencies[$i]}${NC} is installed."
+
 		fi
 	done
 }
 
-#spinner
+function mac_install_prerequisites() {
+	echo -e "[${YELLOW}\uf046${NC} ] ${MAGENTA}Installing prerequisites ...${NC}"
+	if [[ -d "$HOME/.nvim_capsules" ]]; then
+		echo -e "[${GREEN}\ue5fe${NC} ] ${BLUE}$HOME/.nvim_capsules${NC} already exists."
+	else
+		mkdir -p $HOME/.nvim_capsules
+		echo -e "[${GREEN}\uf413${NC} ] ${GREEN}$HOME/.nvim_capsules${NC} created."
+	fi
+}
+
+function create_capsule(){
+
+			file_time_stamp=$(date +%Y-%m-%d-%H%M%S)
+			echo "save_file_name: $save_file_name"
+			#_spin='⣾⣽⣻⢿⡿⣟⣯⣷'
+			#_spin="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+			_spin="⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏ "
+			charwidth=2
+			zip -qr - ~/.local/share/nvim | pv -s $(gdu -bs ~/.local/share/nvim | awk '{print $1}') >~/.nvim_capsules/NVIM_LOCAL_FILE$file_time_stamp.zip &
+			pid=$!
+			#while ps -p $pid >/dev/null; do
+			while kill -0 $pid 2> /dev/null; do
+				tput civis # cursor invisible
+				i=$(((i + $charwidth) % ${#_spin}))
+				printf "${RED}%s${NC}" "${_spin:$i:$charwidth}"
+				echo
+				tput cuu1 # cursor up 1
+				tput el
+			done
+			i=0
+
+}
+
+
+function list_capsules(){
+	echo -e "[${YELLOW}\uf046${NC} ] ${MAGENTA}Listing capsules ...${NC}"
+	if [[ -d "$HOME/.nvim_capsules" ]]; then
+		echo -e "[${GREEN}\ue5fe${NC} ] ${BLUE}$HOME/.nvim_capsules${NC} exists."
+		capsules_list_containers=$(ls -l $HOME/.nvim_capsules | awk '{print $9}')
+		eval "line1=($capsules_list_containers)"
+		for ((i = 0; i < ${#line1[@]}; i++)); do
+			echo -e "[${MAGENTA}\ue7b2${NC} ] ${GREEN}${line1[$i]}${NC}"
+		done
+	else
+		echo -e "[${RED}\uf487${NC} ] ${RED}$HOME/.nvim_capsules${NC} does not exist."
+	fi
+
+}
+
 whichSystem
 if [[ $SYSTEM_TYPE == 'macOSX' ]]; then
+	mac_install_prerequisites
+	check_macOS_dependencies
+
 	while [[ "$1" != "" ]]; do
 		case $1 in
 		-cc | --create_capsule)
-			echo -ne "[${BLUE}\uf179${NC} ] Creating a new capsule...\n"
+			echo -ne "[${BLUE}\ue7b2${NC} ] Creating a new capsule...\n"
 			currentTime
+			create_capsule
 			exit 1
 			;;
 		-l | --list_capsules)
 			currentTime
+			list_capsules
 			exit 1
 			;;
 		-rc | --restore_capsule)
@@ -129,7 +188,6 @@ if [[ $SYSTEM_TYPE == 'macOSX' ]]; then
 			exit 1
 			;;
 		-[hH] | --help)
-			check_macOS_dependencies
 			help
 			exit 1
 			;;
