@@ -1,5 +1,29 @@
 #!/usr/bin/env bash
-
+# **************************************************************************************
+# Copyright (c) 2001-2011, Ghasak Ibrahim All Rights Reserved.                       *
+#                                                                                      *
+# Redistribution and use in source and binary forms, with or without modification,     *
+# are permitted provided that the following conditions are met:                        *
+#                                                                                      *
+# 1. Redistributions of source code must retain the above copyright notice, this       *
+#    list of conditions and the following disclaimer.                                  *
+# 2. Redistributions in binary form must reproduce the above copyright notice,         *
+#    this list of conditions and the following disclaimer in the documentation         *
+#    and/or other materials provided with the distribution.                            *
+# 3. The name of the author may not be used to endorse or promote products derived     *
+#    from this software without specific prior written permission.                     *
+#                                                                                      *
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED         *
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF                 *
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO           *
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,      *
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT      *
+# OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS          *
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN              *
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING      *
+# IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY       *
+# OF SUCH DAMAGE.                                                                      *
+# **************************************************************************************
 ##### Constants
 TITLE="Compile and watch on system: $HOSTNAME"
 RIGHT_NOW="$(date +"%x %r %Z")"
@@ -31,70 +55,33 @@ function whichSystem() {
 	fi
 }
 
-function cursorBack() {
-	echo -en "\033[$1D"
-}
-echo -n "$SHELL $USER $HOME"
-echo -ne "Checking system...\n"
 
-function spinner() {
-	# ---------------------------------------------------------------
-	#                      Spinner function
-	# ---------------------------------------------------------------
-	i=1
-	spin='⣾⣽⣻⢿⡿⣟⣯⣷'
-	_spin="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
-	charwidth=1
-	counter=0
-	i=0
-	tput civis # cursor invisible
-	while [[ ${counter} -lt 10 ]]; do
-		#printf "\b${sping:i++%${#sping}:1}"
-		i=$(((i + $charwidth) % ${#_spin}))
-		printf "${RED}%s${NC}" "${_spin:$i:$charwidth}"
-		echo -ne "$(ls -l | wc -l) files\r"
-		#cursorBack 1
-		sleep 0.2
-		echo
-		tput cuu1 # cursor up 1
-		tput el
-		counter=$((counter + 1))
-	done
-}
-
-# zip a file with progress bar <- You need gdu
-# zip -qr - ./testingSpark | pv -s $(gdu -bs ./testingSpark | awk '{print $1}') > spark_testing.zip
-# unzip with progress bar <- You need gdu
-# unzip -o spark_testing.zip -d ./ | pv -l > /dev/null
-# ----------------------------------
-# command [opetions] args
-# -- list_capsules
-# -- create_capsule
-# -- restore_capsule
 
 function help() {
-	cat <<EOF
+	echo -e "
+	Usage: $0 [${YELLOW}OPTION${NC}]
+	${RED}nvimTime${NC} [${YELLOW}OPTION${NC}] [${BLUE}FILE${NC}] [${MAGENTA}ARGUMENT${NC}] ...
 
-OPTIONS:
+${YELLOW}OPTIONS${NC}:
 --------
+	(-${RED}cc${NC})   | (${YELLOW}--create_capsule${NC})    : create a new capsules
+	(-${RED}l${NC})    | (${YELLOW}--list_capsules${NC})     : list all saved capsules
+	(-${RED}rc${NC})   | (${YELLOW}--restore_capsule${NC})   : restore a capsule
+	(-${RED}[${BLUE}vV${RED}]${NC}) | (${YELLOW}--version${NC})           : current CLI version
+	(-${RED}[${BLUE}hH${RED}]${NC}) | (${YELLOW}--help${NC})              : show this help
 
-	(-cc)   | (--create_capsule)    : create a new capsules
-	(-l)    | (--list_capsules)     : list all saved capsules
-	(-rc)   | (--restore_capsule)   : restore a capsule
-	(-[vV]) | (--version)           : current CLI version
-	(-[hH]) | (--help)	            : show this help
-
-Dependencies:
+${YELLOW}Dependencies${NC}:
 -------------
-	- gdu       : brew install gdu
-	- pv        : brew install pv
-	- zip       : brew install zip
+	- ${BLUE}gdu${NC}       : ${RED}brew${NC} install ${BLUE}gdu${NC}
+	- ${BLUE}pv${NC}        : ${RED}brew${NC} install ${BLUE}pv${NC}
+	- ${BLUE}zip${NC}       : ${RED}brew${NC} install ${BLUE}zip${NC}
 
 Notes:
 ------
 	MacOSX: \$HOME is \$home for GNU Linux
+	"
+	exit 0
 
-EOF
 }
 
 function version() {
@@ -256,10 +243,44 @@ exit 0
 
 }
 
+function check_bash_version(){
+	bash_version=$(bash --version | awk 'NR==1{print $4}' | awk -F "(" '{print $1}')
+	echo -e "[${GREEN}\ue20f${NC} ] Running on Bash Version: ${GREEN}$bash_version${NC}"
+	bash_version=$(echo $bash_version | awk -F "." '{print $1}')
+	if [[ $bash_version -lt 4 ]]; then
+		echo -e "[${RED}\uf487${NC} ] ${RED}You are using bash version ${bash_version}.${NC} Please use bash version 4 or higher."
+		exit 1
+	fi
+
+}
+
+function checking_font(){
+	# echo -e "[${YELLOW}\uf046${NC} ] ${MAGENTA}Checking font...${NC}"
+	# if [[ -f "$HOME/.fonts/DejaVuSansMono.ttf" ]]; then
+	# 	echo -e "[${GREEN}\uf413${NC} ] ${GREEN}DejaVuSansMono.ttf${NC} exists."
+	# else
+	# 	echo -e "[${RED}\uf487${NC} ] ${RED}DejaVuSansMono.ttf${NC} does not exist."
+	# 	echo -e "[${YELLOW}\uf046${NC} ] ${MAGENTA}Downloading DejaVuSansMono.ttf...${NC}"
+	# 	wget -O $HOME/.fonts/DejaVuSansMono.ttf
+	# to do
+	# - [ ] check terminal type application (iterm, alacritty, etc)
+	# - [ ] check if the font is already installed.
+	# - [ ] install missing font if required.
+	# - [ ] set a default font if required.
+
+	current_nerd_fonts=$(fc-list : family | sort -f | grep NF)
+	for font in $current_nerd_fonts; do
+		if [[ $font != "NF" ]]; then
+		echo -e "[${GREEN}\uf413${NC} ] ${GREEN}${font}${NC} exists."
+		fi
+	done
+}
+
 # --------- Main --------------
 
 whichSystem
 if [[ $SYSTEM_TYPE == 'macOSX' ]]; then
+	check_bash_version
 	mac_install_prerequisites
 	check_macOS_dependencies
 
@@ -288,6 +309,7 @@ if [[ $SYSTEM_TYPE == 'macOSX' ]]; then
 			exit 1
 			;;
 		-[hH] | --help)
+			checking_font
 			help
 			exit 1
 			;;
@@ -309,3 +331,11 @@ if [[ $SYSTEM_TYPE == 'macOSX' ]]; then
 		esac
 	done
 fi
+
+# ----------------------------------
+# Useful References
+# zip a file with progress bar <- You need gdu
+# zip -qr - ./testingSpark | pv -s $(gdu -bs ./testingSpark | awk '{print $1}') > spark_testing.zip
+# unzip with progress bar <- You need gdu
+# unzip -o spark_testing.zip -d ./ | pv -l > /dev/null
+# ----------------------------------
