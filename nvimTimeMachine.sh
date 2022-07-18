@@ -309,7 +309,7 @@ if [[ $SYSTEM_TYPE == 'macOSX' ]]; then
 			exit 1
 			;;
 		-[hH] | --help)
-			checking_font
+			#checking_font
 			help
 			exit 1
 			;;
