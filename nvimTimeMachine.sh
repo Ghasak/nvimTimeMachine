@@ -126,31 +126,29 @@ function mac_install_prerequisites() {
 	fi
 }
 
-function create_capsule(){
-
-			file_time_stamp=$(date +%Y-%m-%d-%H%M%S)
-			echo "save_file_name: $save_file_name"
-			#_spin='⣾⣽⣻⢿⡿⣟⣯⣷'
-			#_spin="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
-			_spin="⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏ "
-			charwidth=2
-			zip -qr - ~/.local/share/nvim | pv -s $(gdu -bs ~/.local/share/nvim | awk '{print $1}') >~/.nvim_capsules/NVIM_LOCAL_FILE$file_time_stamp.zip &
-			pid=$!
-			#while ps -p $pid >/dev/null; do
-			while kill -0 $pid 2> /dev/null; do
-				tput civis # cursor invisible
-				i=$(((i + $charwidth) % ${#_spin}))
-				printf "${RED}%s${NC}" "${_spin:$i:$charwidth}"
-				echo
-				tput cuu1 # cursor up 1
-				tput el
-			done
-			i=0
+function create_capsule() {
+	file_time_stamp=$(date +%Y-%m-%d-%H%M%S)
+	echo "save_file_name: $save_file_name"
+	#_spin='⣾⣽⣻⢿⡿⣟⣯⣷'
+	#_spin="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+	_spin="⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏ "
+	charwidth=2
+	zip -qr - ~/.local/share/nvim | pv -s $(gdu -bs ~/.local/share/nvim | awk '{print $1}') >~/.nvim_capsules/nvim_backup_$file_time_stamp.zip &
+	pid=$!
+	#while ps -p $pid >/dev/null; do
+	while kill -0 $pid 2>/dev/null; do
+		tput civis # cursor invisible
+		i=$(((i + $charwidth) % ${#_spin}))
+		printf "${RED}%s${NC}" "${_spin:$i:$charwidth}"
+		echo
+		tput cuu1 # cursor up 1
+		tput el
+	done
+	i=0
 
 }
 
-
-function list_capsules(){
+function list_capsules() {
 	echo -e "[${YELLOW}\uf046${NC} ] ${MAGENTA}Listing capsules ...${NC}"
 	if [[ -d "$HOME/.nvim_capsules" ]]; then
 		echo -e "[${GREEN}\ue5fe${NC} ] ${BLUE}$HOME/.nvim_capsules${NC} exists."
@@ -164,6 +162,55 @@ function list_capsules(){
 	fi
 
 }
+
+function restore_capsule() {
+	capsule_name=$1
+	parsed_time_stamp=$(echo $capsule_name | awk -F "_" '{print $3}' | awk -F "." '{print $1}')
+	_spin="⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏ "
+	charwidth=2
+	echo -e "[${YELLOW}\uf046${NC} ] ${MAGENTA}Restoring capsule ${capsule_name}...${NC}"
+	if [[ -f "$HOME/.nvim_capsules/${capsule_name}" ]]; then
+		if [[ -d "$HOME/.local/share/nvim" ]]; then
+			mv $HOME/.local/share/nvim $HOME/.local/share/nvim_backup
+		else
+			echo -e "[${RED}\uf487${NC} ] ${RED}$HOME/.local/share/nvim${NC} does not exist."
+		fi
+		echo -e "[${GREEN}\uf413${NC} ] ${GREEN}$HOME/.nvim_capsules/${capsule_name}${NC} exists."
+		unzip -o $HOME/.nvim_capsules/${capsule_name} -d $HOME/.local/share/temp_$parsed_time_stamp | pv -l >/dev/null &
+		pid=$!
+		while kill -0 $pid 2>/dev/null; do
+			tput civis # cursor invisible
+			i=$(((i + $charwidth) % ${#_spin}))
+			printf "${RED}%s${NC}" "${_spin:$i:$charwidth}"
+			echo
+			tput cuu1 # cursor up 1
+			tput el
+		done
+		i=0
+		# Excuting these should be come after the spinner is done.
+		mv $HOME/.local/share/temp_$parsed_time_stamp/$HOME/.local/share/nvim $HOME/.local/share/
+		rm -rf $HOME/.local/share/temp_$parsed_time_stamp
+
+		echo "Do you want to remove backup files? (y/n)"
+		read -p "$(echo -e "See help: Continue? (${MAGENTA}Y${NC}/${MAGENTA}N${NC}): ")" confirm
+		if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+			rm -rf $HOME/.local/share/nvim_backup
+			exit 0
+		else
+			exit 0
+		fi
+
+	else
+
+		echo -e "[${RED}\uf487${NC} ] ${RED}$HOME/.nvim_capsules/${capsule_name}${NC} does not exist."
+	fi
+
+exit 0
+
+
+}
+
+# --------- Main --------------
 
 whichSystem
 if [[ $SYSTEM_TYPE == 'macOSX' ]]; then
@@ -185,6 +232,13 @@ if [[ $SYSTEM_TYPE == 'macOSX' ]]; then
 			;;
 		-rc | --restore_capsule)
 			currentTime
+			if [[ -z "$2" ]]; then
+				echo -e "[${RED}\uf487${NC} ] ${RED}Please provide a capsule name.${NC}"
+				exit 1
+			else
+				restore_capsule $2
+				exit 1
+			fi
 			exit 1
 			;;
 		-[hH] | --help)
