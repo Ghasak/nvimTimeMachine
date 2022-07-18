@@ -133,6 +133,7 @@ function create_capsule() {
 	#_spin="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
 	_spin="⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏ "
 	charwidth=2
+	# ------------ Create a capsule for nvim plugins and languages servers -------------
 	zip -qr - ~/.local/share/nvim | pv -s $(gdu -bs ~/.local/share/nvim | awk '{print $1}') >~/.nvim_capsules/nvim_backup_$file_time_stamp.zip &
 	pid=$!
 	#while ps -p $pid >/dev/null; do
@@ -146,6 +147,18 @@ function create_capsule() {
 	done
 	i=0
 
+	# ------------ Do same for the nvim at .config/nvim ------------
+	zip -qr - ~/.config/nvim | pv -s $(gdu -bs ~/.config/nvim | awk '{print $1}') >~/.nvim_capsules/nvim_config_$file_time_stamp.zip &
+	pid=$!
+	while kill -0 $pid 2>/dev/null; do
+		tput civis # cursor invisible
+		i=$(((i + $charwidth) % ${#_spin}))
+		printf "${RED}%s${NC}" "${_spin:$i:$charwidth}"
+		echo
+		tput cuu1 # cursor up 1
+		tput el
+	done
+	i=0
 }
 
 function list_capsules() {
@@ -176,6 +189,7 @@ function restore_capsule() {
 			echo -e "[${RED}\uf487${NC} ] ${RED}$HOME/.local/share/nvim${NC} does not exist."
 		fi
 		echo -e "[${GREEN}\uf413${NC} ] ${GREEN}$HOME/.nvim_capsules/${capsule_name}${NC} exists."
+		# ------------ restore nvim plugins and languages servers -------------
 		unzip -o $HOME/.nvim_capsules/${capsule_name} -d $HOME/.local/share/temp_$parsed_time_stamp | pv -l >/dev/null &
 		pid=$!
 		while kill -0 $pid 2>/dev/null; do
@@ -195,6 +209,38 @@ function restore_capsule() {
 		read -p "$(echo -e "See help: Continue? (${MAGENTA}Y${NC}/${MAGENTA}N${NC}): ")" confirm
 		if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
 			rm -rf $HOME/.local/share/nvim_backup
+		else
+			continue
+		fi
+		# ------------ restore nvim at .config/nvim ------------
+		# Notice here  in this if statement, we are checking if the .config/nvim folder exists.
+		# should remove exit otherwise the following code will not be executed.
+		if [[ -d "$HOME/.config/nvim" ]]; then
+			mv $HOME/.config/nvim $HOME/.config/nvim_backup
+		else
+			echo -e "[${RED}\uf487${NC} ] ${RED}$HOME/.config/nvim${NC} does not exist."
+		fi
+		capsule_config_name=nvim_config_$parsed_time_stamp.zip
+		unzip -o $HOME/.nvim_capsules/${capsule_config_name} -d $HOME/.config/temp_$parsed_time_stamp | pv -l >/dev/null &
+		pid=$!
+		while kill -0 $pid 2>/dev/null; do
+			tput civis # cursor invisible
+			i=$(((i + $charwidth) % ${#_spin}))
+			printf "${RED}%s${NC}" "${_spin:$i:$charwidth}"
+			echo
+			tput cuu1 # cursor up 1
+			tput el
+		done
+		i=0
+		# Excuting these should be come after the spinner is done.
+		mv $HOME/.config/temp_$parsed_time_stamp/$HOME/.config/nvim $HOME/.config/
+		rm -rf $HOME/.config/temp_$parsed_time_stamp
+		echo -e "[${GREEN}\uf413${NC} ] ${GREEN}$HOME/.config/nvim${NC} restored."
+		echo -e "[${GREEN}\uf413${NC} ] ${GREEN}$HOME/.local/share/nvim${NC} restored."
+		echo "Do you want to remove backup files? (y/n)"
+		read -p "$(echo -e "See help: Continue? (${MAGENTA}Y${NC}/${MAGENTA}N${NC}): ")" confirm
+		if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+			rm -rf $HOME/.config/nvim_backup
 			exit 0
 		else
 			exit 0
