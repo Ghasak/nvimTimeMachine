@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # **************************************************************************************
-# Copyright (c) 2001-2011, Ghasak Ibrahim All Rights Reserved.                       *
+# Copyright (c) 2022, Ghasak Ibrahim All Rights Reserved.                       *
 #                                                                                      *
 # Redistribution and use in source and binary forms, with or without modification,     *
 # are permitted provided that the following conditions are met:                        *
@@ -152,7 +152,8 @@ function list_capsules() {
 	echo -e "[${YELLOW}\uf046${NC} ] ${MAGENTA}Listing capsules ...${NC}"
 	if [[ -d "$HOME/.nvim_capsules" ]]; then
 		echo -e "[${GREEN}\ue5fe${NC} ] ${BLUE}$HOME/.nvim_capsules${NC} exists."
-		capsules_list_containers=$(ls -l $HOME/.nvim_capsules | sort -n -t _ -k 2 | awk '{print $9}' )
+		# We care about the capsule name which has two files backup_ and config_
+		capsules_list_containers=$(ls -l $HOME/.nvim_capsules/ | sort -n -t _ -k 2 | awk '{print $9}' | awk -F "." '{print $1}' | awk '/backup/{print $0}')
 		eval "line1=($capsules_list_containers)"
 		for ((i = 0; i < ${#line1[@]}; i++)); do
 			echo -e "[${MAGENTA}\ue7b2${NC} ] ${GREEN}${line1[$i]}${NC}"
