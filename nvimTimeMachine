@@ -152,7 +152,7 @@ function list_capsules() {
 	echo -e "[${YELLOW}\uf046${NC} ] ${MAGENTA}Listing capsules ...${NC}"
 	if [[ -d "$HOME/.nvim_capsules" ]]; then
 		echo -e "[${GREEN}\ue5fe${NC} ] ${BLUE}$HOME/.nvim_capsules${NC} exists."
-		capsules_list_containers=$(ls -l $HOME/.nvim_capsules | awk '{print $9}')
+		capsules_list_containers=$(ls -l $HOME/.nvim_capsules | sort -n -t _ -k 2 | awk '{print $9}' )
 		eval "line1=($capsules_list_containers)"
 		for ((i = 0; i < ${#line1[@]}; i++)); do
 			echo -e "[${MAGENTA}\ue7b2${NC} ] ${GREEN}${line1[$i]}${NC}"
