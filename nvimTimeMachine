@@ -46,7 +46,7 @@ function whichSystem() {
 	if [ "$(uname)" == "Darwin" ]; then
 		# Do something under Mac OS X platform
 		echo -ne "[${BLUE}\uf179${NC} ] Running on ${YELLOW}macOSX${NC}\n"
-		currentTime
+		#currentTime
 		SYSTEM_TYPE='macOSX'
 	elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
 		# Do something under GNU/Linux platform
@@ -149,9 +149,11 @@ function create_capsule() {
 }
 
 function list_capsules() {
+	echo "--------------------------------------"
 	echo -e "[${YELLOW}\uf046${NC} ] ${MAGENTA}Listing capsules ...${NC}"
+	echo "--------------------------------------"
 	if [[ -d "$HOME/.nvim_capsules" ]]; then
-		echo -e "[${GREEN}\ue5fe${NC} ] ${BLUE}$HOME/.nvim_capsules${NC} exists."
+		#echo -e "[${GREEN}\ue5fe${NC} ] ${BLUE}$HOME/.nvim_capsules${NC} exists."
 		# We care about the capsule name which has two files backup_ and config_
 		capsules_list_containers=$(ls -l $HOME/.nvim_capsules/ | sort -n -t _ -k 2 | awk '{print $9}' | awk -F "." '{print $1}' | awk '/backup/{print $0}')
 		eval "line1=($capsules_list_containers)"
@@ -281,6 +283,7 @@ function checking_font(){
 
 whichSystem
 if [[ $SYSTEM_TYPE == 'macOSX' ]]; then
+	currentTime
 	check_bash_version
 	mac_install_prerequisites
 	check_macOS_dependencies
@@ -289,17 +292,14 @@ if [[ $SYSTEM_TYPE == 'macOSX' ]]; then
 		case $1 in
 		-cc | --create_capsule)
 			echo -ne "[${BLUE}\ue7b2${NC} ] Creating a new capsule...\n"
-			currentTime
 			create_capsule
 			exit 1
 			;;
 		-l | --list_capsules)
-			currentTime
 			list_capsules
 			exit 1
 			;;
 		-rc | --restore_capsule)
-			currentTime
 			if [[ -z "$2" ]]; then
 				echo -e "[${RED}\uf487${NC} ] ${RED}Please provide a capsule name.${NC}"
 				exit 1
