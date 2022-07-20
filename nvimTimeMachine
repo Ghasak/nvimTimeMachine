@@ -55,8 +55,6 @@ function whichSystem() {
 	fi
 }
 
-
-
 function help() {
 	echo -e "
 	Usage: $0 [${YELLOW}OPTION${NC}]
@@ -241,12 +239,11 @@ function restore_capsule() {
 		echo -e "[${RED}\uf487${NC} ] ${RED}$HOME/.nvim_capsules/${capsule_name}${NC} does not exist."
 	fi
 
-exit 0
-
+	exit 0
 
 }
 
-function check_bash_version(){
+function check_bash_version() {
 	bash_version=$(bash --version | awk 'NR==1{print $4}' | awk -F "(" '{print $1}')
 	echo -e "[${GREEN}\ue20f${NC} ] Running on Bash Version: ${GREEN}$bash_version${NC}"
 	bash_version=$(echo $bash_version | awk -F "." '{print $1}')
@@ -257,7 +254,7 @@ function check_bash_version(){
 
 }
 
-function checking_font(){
+function checking_font() {
 	# echo -e "[${YELLOW}\uf046${NC} ] ${MAGENTA}Checking font...${NC}"
 	# if [[ -f "$HOME/.fonts/DejaVuSansMono.ttf" ]]; then
 	# 	echo -e "[${GREEN}\uf413${NC} ] ${GREEN}DejaVuSansMono.ttf${NC} exists."
@@ -274,7 +271,7 @@ function checking_font(){
 	current_nerd_fonts=$(fc-list : family | sort -f | grep NF)
 	for font in $current_nerd_fonts; do
 		if [[ $font != "NF" ]]; then
-		echo -e "[${GREEN}\uf413${NC} ] ${GREEN}${font}${NC} exists."
+			echo -e "[${GREEN}\uf413${NC} ] ${GREEN}${font}${NC} exists."
 		fi
 	done
 }
@@ -300,14 +297,27 @@ if [[ $SYSTEM_TYPE == 'macOSX' ]]; then
 			exit 1
 			;;
 		-rc | --restore_capsule)
-			if [[ -z "$2" ]]; then
-				echo -e "[${RED}\uf487${NC} ] ${RED}Please provide a capsule name.${NC}"
+			selections=$(ls -l $HOME/.nvim_capsules/ | sort -n -t _ -k 2 | awk '{print $9}' | awk -F "." '{print $1}' | awk '/backup/{print $0}')
+			if [[ -z $selections ]]; then
+				echo -e "[${RED}\uf071${NC} ] ${RED}No backup capsule found.${NC}"
 				exit 1
 			else
-				restore_capsule $2
-				exit 1
+				# This could be alter to the direction of the sciprt installation.
+				source $HOME/.GScript/nvimTimeMachine/select_menu.sh
+				echo -e "[${RED}\uf487${NC} ] ${RED}Please select a capsule to restore:${NC}"
+				eval "selections=($selections)"
+				choose_from_menu "Please make a choice:" selected_choice "${selections[@]}"
+				selected_capsule=$selected_choice.zip
+				read -p "$(echo -e "You have selected ${MAGENTA}$selected_choice${NC}: Do you want to Continue? (${MAGENTA}Y${NC}/${MAGENTA}N${NC}): ")" confirm
+				if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+					echo $selected_capsule
+					restore_capsule $selected_capsule
+					exit 0
+				else
+					exit 0
+				fi
+
 			fi
-			exit 1
 			;;
 		-[hH] | --help)
 			#checking_font
@@ -332,22 +342,4 @@ if [[ $SYSTEM_TYPE == 'macOSX' ]]; then
 		esac
 	done
 fi
-
-# ----------------------------------
-# Useful References
-# zip a file with progress bar <- You need gdu
-# zip -qr - ./testingSpark | pv -s $(gdu -bs ./testingSpark | awk '{print $1}') > spark_testing.zip
-# unzip with progress bar <- You need gdu
-# unzip -o spark_testing.zip -d ./ | pv -l > /dev/null
-# ----------------------------------
-
-# source $HOME/.GScript/nvimTimeMachine/select_menu.sh
-# selections=(
-# "Selection A"
-# "Selection B"
-# "Selection C"
-# )
-# choose_from_menu
-# choose_from_menu "Please make a choice:" selected_choice "${selections[@]}"
-# echo "Selected choice: $selected_choice"
 
