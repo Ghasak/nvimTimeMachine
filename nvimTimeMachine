@@ -340,3 +340,14 @@ fi
 # unzip with progress bar <- You need gdu
 # unzip -o spark_testing.zip -d ./ | pv -l > /dev/null
 # ----------------------------------
+
+# source $HOME/.GScript/nvimTimeMachine/select_menu.sh
+# selections=(
+# "Selection A"
+# "Selection B"
+# "Selection C"
+# )
+# choose_from_menu
+# choose_from_menu "Please make a choice:" selected_choice "${selections[@]}"
+# echo "Selected choice: $selected_choice"
+

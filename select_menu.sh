@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 function choose_from_menu() {
     local prompt="$1" outvar="$2"
     shift
@@ -32,17 +31,18 @@ function choose_from_menu() {
         echo -en "\e[${count}A" # go up to the beginning to re-render
     done
     # export the selection to the requested output variable
-    printf -v $outvar "${options[$cur]}"
+    #printf -v $outvar "${options[$cur]}"
+    echo  $outvar "${options[$cur]}"
 }
 
-selections=(
-"Selection A"
-"Selection B"
-"Selection C"
-)
+# selections=(
+# "Selection A"
+# "Selection B"
+# "Selection C"
+# )
 
-choose_from_menu "Please make a choice:" selected_choice "${selections[@]}"
-echo "Selected choice: $selected_choice"
+# choose_from_menu "Please make a choice:" selected_choice "${selections[@]}"
+# echo "Selected choice: $selected_choice"
 
 #------------
 # Reference:
