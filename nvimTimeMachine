@@ -56,9 +56,15 @@ function whichSystem() {
 }
 
 function help() {
+
 	echo -e "
-	Usage: $0 [${YELLOW}OPTION${NC}]
-	${RED}nvimTime${NC} [${YELLOW}OPTION${NC}] [${BLUE}FILE${NC}] [${MAGENTA}ARGUMENT${NC}] ...
+Usage: ${BLUE}$0${NC}
+nvimTime [${YELLOW}OPTIONS${NC}]
+	${GREEN}cc  ${NC} | --${MAGENTA}create_capsule${NC})    : create a new capsules
+	${GREEN}l   ${NC} | --${MAGENTA}list_capsules${NC})     : list all saved capsules
+	${GREEN}rc  ${NC} | --${MAGENTA}restore_capsule${NC})   : restore a capsule
+	${GREEN}[vV]${NC} | --${MAGENTA}version${NC})           : current CLI version
+	${GREEN}[hH]${NC} | --${MAGENTA}help${NC})              : show this help
 
 ${YELLOW}OPTIONS${NC}:
 --------
@@ -68,15 +74,16 @@ ${YELLOW}OPTIONS${NC}:
 	(-${RED}[${BLUE}vV${RED}]${NC}) | (${YELLOW}--version${NC})           : current CLI version
 	(-${RED}[${BLUE}hH${RED}]${NC}) | (${YELLOW}--help${NC})              : show this help
 
-${YELLOW}Dependencies${NC}:
+${YELLOW}DEPENDENCIES${NC}:
 -------------
 	- ${BLUE}gdu${NC}       : ${RED}brew${NC} install ${BLUE}gdu${NC}
 	- ${BLUE}pv${NC}        : ${RED}brew${NC} install ${BLUE}pv${NC}
 	- ${BLUE}zip${NC}       : ${RED}brew${NC} install ${BLUE}zip${NC}
 
-Notes:
+${YELLOW}NOTES${NC}:
 ------
-	MacOSX: \$HOME is \$home for GNU Linux
+	${YELLOW}MacOSX${NC}: ${RED}\$HOME${NC} is ${BLUE}\$home${NC} for ${YELLOW}GNU Linux${NC}
+	Old Usage: ${RED}nvimTime${NC} [${YELLOW}OPTION${NC}] [${BLUE}FILE${NC}] [${MAGENTA}ARGUMENT${NC}] ...
 	"
 	exit 0
 
