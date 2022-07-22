@@ -138,7 +138,7 @@ function create_capsule() {
 		tput el
 	done
 	i=0
-
+	tput cnorm # make cursor visible again
 	# ------------ Do same for the nvim at .config/nvim ------------
 	zip -qr - ~/.config/nvim | pv -s $(gdu -bs ~/.config/nvim | awk '{print $1}') >~/.nvim_capsules/nvim_config_$file_time_stamp.zip &
 	pid=$!
@@ -151,6 +151,7 @@ function create_capsule() {
 		tput el
 	done
 	i=0
+	tput cnorm # make cursor visible again
 }
 
 function list_capsules() {
@@ -196,6 +197,7 @@ function restore_capsule() {
 			tput el
 		done
 		i=0
+		tput cnorm # make cursor visible again
 		# Excuting these should be come after the spinner is done.
 		mv $HOME/.local/share/temp_$parsed_time_stamp/$HOME/.local/share/nvim $HOME/.local/share/
 		rm -rf $HOME/.local/share/temp_$parsed_time_stamp
@@ -227,6 +229,8 @@ function restore_capsule() {
 			tput el
 		done
 		i=0
+		tput cnorm # make cursor visible again
+
 		# Excuting these should be come after the spinner is done.
 		mv $HOME/.config/temp_$parsed_time_stamp/$HOME/.config/nvim $HOME/.config/
 		rm -rf $HOME/.config/temp_$parsed_time_stamp
