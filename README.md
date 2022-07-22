@@ -62,4 +62,8 @@ ln -s ~/.GScript/nvimTimeMachine/nvimTimeMachine /usr/bin/
 source PATH="$PATH:$HOME/.GScript/nvimTimeMachine/nvimTimeMachine"
 ```
 
+## References
+- [Adding the cursor to be visible or not visible](https://stackoverflow.com/questions/58712760/how-to-hide-the-cursor-in-a-terminal-during-a-script-and-restore-it-back-to-norm)
+
+
 
